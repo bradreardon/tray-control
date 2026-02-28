@@ -56,20 +56,23 @@ This tool depends on `systemd-libs`, `sdbus-cpp` and `fmt`.
 There also submodule dependencies: `cxxopts` and `magic_enum` but you should generally not worry about them since they are included as submodules into this repo.
 
 ## Installation
-### Archlinux
+### Arch Linux
 Check out the repo and use [makepkg](https://wiki.archlinux.org/title/makepkg):
+
 ```shell
-git checkout https://github.com/andrewerf/tray-control.git
+git clone https://github.com/andrewerf/tray-control.git
 cd tray-control
 makepkg -si
 ```
 I hope I'll add this tool to AUR in the near future.
 
 ### Other linux
-Checkout the repo and build with cmake + make:
+Checkout the repo, pull submodules, and build with cmake + make:
 ```shell
-git checkout https://github.com/andrewerf/tray-control.git
+git clone https://github.com/andrewerf/tray-control.git
 cd tray-control
+git submodule init
+git submodule update
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
