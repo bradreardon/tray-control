@@ -16,7 +16,7 @@ StatusNotifierWatcher::~StatusNotifierWatcher() = default;
 std::expected<void, Error> StatusNotifierWatcher::connect()
 {
     return safelyExec( [this] -> std::expected<void, Error> {
-        if ( proxy_ = sdbus::createProxy( sdbus::createSessionBusConnection(), "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher" ) )
+        if ( proxy_ = sdbus::createProxy( sdbus::createSessionBusConnection(), sdbus::ServiceName{ "org.kde.StatusNotifierWatcher" }, sdbus::ObjectPath{ "/StatusNotifierWatcher" } ) )
             return {};
         else
             return makeError( ErrorKind::ConnectionError );

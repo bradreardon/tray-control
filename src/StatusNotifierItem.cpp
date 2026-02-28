@@ -22,7 +22,7 @@ StatusNotifierItem::~StatusNotifierItem() = default;
 std::expected<void, Error> StatusNotifierItem::connect()
 {
     return safelyExec( [this] -> std::expected<void, Error> {
-        if ( proxy_ = sdbus::createProxy( sdbus::createSessionBusConnection(), std::string( destination_ ), "/StatusNotifierItem" ) )
+        if ( proxy_ = sdbus::createProxy( sdbus::createSessionBusConnection(), sdbus::ServiceName{ std::string( destination_ ) }, sdbus::ObjectPath{ "/StatusNotifierItem" } ) )
             return {};
         else
             return makeError( ErrorKind::ConnectionError );

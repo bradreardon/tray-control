@@ -5,7 +5,7 @@ arch=('x86_64')
 
 depends=('systemd-libs'
          'fmt'
-         'sdbus-cpp')
+         'sdbus-cpp>=2.0.0')
 
 makedepends=('git'
              'cmake')
