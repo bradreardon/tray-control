@@ -4,17 +4,20 @@
 #include <cxxopts.hpp>
 #include <iostream>
 #include <fmt/printf.h>
+#include <nlohmann/json.hpp>
 
 #include "StatusNotifierWatcher.h"
 #include "StatusNotifierItem.h"
+#include "StatusNotifierItemJson.h"
 #include "Utils.h"
 #include "Types.h"
+
+using json = nlohmann::json;
 
 
 #define WRAP_FUNC_TO_LAMBDA( func ) \
     [] <typename ...Args> ( Args&& ...args ) -> decltype( auto ) \
         { return func( std::forward<Args>( args )... ); }
-
 
 
 void exitWithMsg( std::string_view msg, int code = -1 )
@@ -29,6 +32,7 @@ int main( int argc, char** argv )
     cxxopts::Options optionsDecl( "tray-show", "Show items in the system tray" );
     optionsDecl.add_options()
         ( "h,help", "Print help and exit", cxxopts::value<bool>()->default_value("false") )
+        ( "j,json", "Print all item properties in JSON format", cxxopts::value<bool>()->default_value("false") )
         ( "v,verbose", "Show full info about each item", cxxopts::value<bool>()->default_value("false") );
 
     const auto options = optionsDecl.parse( argc, argv );
@@ -38,6 +42,7 @@ int main( int argc, char** argv )
         return 0;
     }
     const bool verboseOutput = options["verbose"].as<bool>();
+    const bool jsonOutput = options["json"].as<bool>();
 
     StatusNotifierWatcher watcher;
     if ( auto connRes = watcher.connect(); !connRes )
@@ -50,23 +55,34 @@ int main( int argc, char** argv )
             StatusNotifierItem item( addr );
             if ( auto connRes = item.connect() )
             {
-                item.getCategory() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "Category: %s\n" );
-                item.getTitle() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "Title: %s\n" );
-
-                if ( verboseOutput )
+                if ( jsonOutput ) {
+                    // Serialize, print item data with 4-space indent
+                    json j, jAddr;
+                    to_json( j, item );
+                    to_json( jAddr, addr );
+                    j["address"] = jAddr;
+                    std::cout << j.dump( 4 ) << '\n';
+                }
+                else
                 {
-                    item.getId() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "Id: %s\n" );
-                    item.getStatus() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "Status: %s\n" );
-                    item.getWindowId() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "WindowId: %d\n" );
-                    item.getIconName() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "IconName: %s\n" );
+                    item.getCategory() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "Category: %s\n" );
+                    item.getTitle() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "Title: %s\n" );
+
+                    if ( verboseOutput )
+                    {
+                        item.getId() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "Id: %s\n" );
+                        item.getStatus() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "Status: %s\n" );
+                        item.getWindowId() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "WindowId: %d\n" );
+                        item.getIconName() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "IconName: %s\n" );
+                    }
+
+                    std::cout << '\n';
                 }
             }
             else
             {
                 std::cerr << "Could not connect to the StatusNotifierItem on address: " << addr << " with error: " << connRes.error().show() << '\n';
             }
-
-            std::cout << '\n';
         }
     }
 }
