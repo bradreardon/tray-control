@@ -15,11 +15,6 @@
 using json = nlohmann::json;
 
 
-#define WRAP_FUNC_TO_LAMBDA( func ) \
-    [] <typename ...Args> ( Args&& ...args ) -> decltype( auto ) \
-        { return func( std::forward<Args>( args )... ); }
-
-
 void exitWithMsg( std::string_view msg, int code = -1 )
 {
     std::cerr << msg << std::endl;
@@ -50,38 +45,55 @@ int main( int argc, char** argv )
 
     if ( auto maybeAddrs = watcher.getRegisteredStatusNotifierItemAddresses() )
     {
+        // collect all item data as JSON first, store in a vector
+        std::vector<json> itemData;
+        itemData.reserve( maybeAddrs.value().size() );
+
         for ( const auto& addr : maybeAddrs.value() )
         {
             StatusNotifierItem item( addr );
             if ( auto connRes = item.connect() )
             {
-                if ( jsonOutput ) {
-                    // Serialize, print item data with 4-space indent
-                    json j, jAddr;
-                    to_json( j, item );
-                    to_json( jAddr, addr );
-                    j["address"] = jAddr;
-                    std::cout << j.dump( 4 ) << '\n';
-                }
-                else
-                {
-                    item.getCategory() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "Category: %s\n" );
-                    item.getTitle() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "Title: %s\n" );
+                // Serialize, print item data with 4-space indent
+                json j;
+                to_json( j, item );
 
-                    if ( verboseOutput )
-                    {
-                        item.getId() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "Id: %s\n" );
-                        item.getStatus() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "Status: %s\n" );
-                        item.getWindowId() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "WindowId: %d\n" );
-                        item.getIconName() >> std::bind_front( WRAP_FUNC_TO_LAMBDA( fmt::printf ), "IconName: %s\n" );
-                    }
+                // Add the D-Bus address we used to fetch the information
+                json jAddr;
+                to_json( jAddr, addr );
+                j["address"] = jAddr;
 
-                    std::cout << '\n';
-                }
+                // Push item data onto the vector
+                itemData.push_back( j );
             }
             else
             {
                 std::cerr << "Could not connect to the StatusNotifierItem on address: " << addr << " with error: " << connRes.error().show() << '\n';
+            }
+        }
+
+        // Print collected data in chosen output format
+        if ( jsonOutput ) {
+            // Serialize, print item data with 4-space indent
+            json j = itemData;
+            std::cout << j.dump( 4 ) << '\n';
+        }
+        else
+        {
+            for ( const json& item : itemData )
+            {
+                fmt::printf( "Category: %s\n", item.find("category")->get_ref<const std::string&>() );
+                fmt::printf( "Title: %s\n",    item.find("title")->get_ref<const std::string&>() );
+
+                if ( verboseOutput )
+                {
+                    fmt::printf( "Id: %s\n", item.find("id")->get_ref<const std::string&>() );
+                    fmt::printf( "Status: %s\n", item.find("status")->get_ref<const std::string&>() );
+                    fmt::printf( "WindowId: %s\n", item.find("windowId")->get<uint32_t>() );
+                    fmt::printf( "IconName: %s\n", item.find("iconName")->get_ref<const std::string&>() );
+                }
+
+                std::cout << '\n';
             }
         }
     }
