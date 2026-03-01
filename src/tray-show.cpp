@@ -71,7 +71,7 @@ int main( int argc, char** argv )
         for ( const auto& addr : maybeAddrs.value() )
         {
             StatusNotifierItem item( addr );
-            if ( auto connRes = item.connect() )
+            if ( auto connRes = item.connect(); auto dbusConnRes = item.connectDBus() )
             {
                 // Serialize, print item data with 4-space indent
                 json j;

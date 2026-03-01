@@ -30,6 +30,16 @@ std::expected<void, Error> StatusNotifierItem::connect()
     } );
 }
 
+std::expected<void, Error> StatusNotifierItem::connectDBus()
+{
+    return safelyExec( [this] -> std::expected<void, Error> {
+        if ( proxy_pid_ = sdbus::createProxy( sdbus::createSessionBusConnection(), sdbus::ServiceName{ "org.freedesktop.DBus" }, sdbus::ObjectPath{ "/org/freedesktop/DBus" } ) )
+            return {};
+        else
+            return makeError( ErrorKind::ConnectionError );
+    } );
+}
+
 std::expected<std::string, Error> StatusNotifierItem::getCategory()
 {
     return safelyGetSNIProperty<std::string>( proxy_, "Category" );
@@ -78,6 +88,12 @@ std::expected<std::string, Error> StatusNotifierItem::getAttentionMovieName()
 std::expected<StatusNotifierItem::ToolTip, Error> StatusNotifierItem::getToolTip()
 {
     return makeError( ErrorKind::UnknownError, "ToolTip is not implemented yet" );
+}
+
+std::expected<uint32_t, Error> StatusNotifierItem::getPID()
+{
+    // use the unique service name to resolve the PID from the D-Bus method
+    return safelyCallMethod<uint32_t>( proxy_pid_, "org.freedesktop.DBus", "GetConnectionUnixProcessID", destination_.serviceName );
 }
 
 std::expected<void, Error> StatusNotifierItem::activate( int x, int y )

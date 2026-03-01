@@ -41,6 +41,11 @@ inline void to_json(json& j, StatusNotifierItem& t)
     json_set_or_null(j, "attentionIconName", t.getAttentionIconName());
     json_set_or_null(j, "attentionMovieName", t.getAttentionMovieName());
 
+    json jProcess = json::object();
+    json_set_or_null(jProcess, "pid", t.getPID());
+
+    j["process"] = jProcess;
+
     // TODO: re-add after getToolTip is implemented
     // json_set_or_null(j, "toolTip", t.getToolTip());
 }

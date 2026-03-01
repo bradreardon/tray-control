@@ -33,6 +33,8 @@ public:
 
     std::expected<void, Error> connect();
 
+    std::expected<void, Error> connectDBus();
+
 
     /**
      * @name Properties
@@ -66,6 +68,8 @@ public:
 
     std::expected<ToolTip, Error> getToolTip();
 
+    std::expected<uint32_t, Error> getPID();
+
     // menu
     ///@}
 
@@ -86,5 +90,6 @@ public:
 
 private:
     std::unique_ptr<sdbus::IProxy> proxy_;
+    std::unique_ptr<sdbus::IProxy> proxy_pid_;
     SniAddress destination_;
 };
