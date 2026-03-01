@@ -6,6 +6,7 @@
 #include <sdbus-c++/sdbus-c++.h>
 
 #include "DBusUtils.h"
+#include "Process.h"
 #include "Types.h"
 
 
@@ -94,6 +95,18 @@ std::expected<uint32_t, Error> StatusNotifierItem::getPID()
 {
     // use the unique service name to resolve the PID from the D-Bus method
     return safelyCallMethod<uint32_t>( proxy_pid_, "org.freedesktop.DBus", "GetConnectionUnixProcessID", destination_.serviceName );
+}
+
+std::expected<std::string, Error> StatusNotifierItem::getProcessName()
+{
+    // use the unique service name to resolve the PID from the D-Bus method
+    return getProcessNameFromPid(this->getPID().value());
+}
+
+std::expected<std::string, Error> StatusNotifierItem::getProcessCmdline()
+{
+    // use the unique service name to resolve the PID from the D-Bus method
+    return getProcessCmdlineFromPid(this->getPID().value());
 }
 
 std::expected<void, Error> StatusNotifierItem::activate( int x, int y )

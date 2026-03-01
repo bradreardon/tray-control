@@ -11,7 +11,7 @@ find_package(sdbus-c++ REQUIRED)
 find_package(fmt REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-add_library(core STATIC src/StatusNotifierWatcher.cpp src/StatusNotifierItem.cpp)
+add_library(core STATIC src/StatusNotifierWatcher.cpp src/StatusNotifierItem.cpp src/Process.cpp)
 target_link_libraries(core SDBusCpp::sdbus-c++)
 
 add_executable(tray-show src/tray-show.cpp)

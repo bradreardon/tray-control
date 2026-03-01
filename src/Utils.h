@@ -8,6 +8,7 @@
 #include <ranges>
 #include <functional>
 
+
 template <typename T, typename E>
 constexpr std::variant<T, E> toVariant( std::expected<T, E>&& expected )
 {

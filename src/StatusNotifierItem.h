@@ -70,6 +70,10 @@ public:
 
     std::expected<uint32_t, Error> getPID();
 
+    std::expected<std::string, Error> getProcessName();
+
+    std::expected<std::string, Error> getProcessCmdline();
+
     // menu
     ///@}
 

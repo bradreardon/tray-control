@@ -43,6 +43,8 @@ inline void to_json(json& j, StatusNotifierItem& t)
 
     json jProcess = json::object();
     json_set_or_null(jProcess, "pid", t.getPID());
+    json_set_or_null(jProcess, "name", t.getProcessName());
+    json_set_or_null(jProcess, "cmdline", t.getProcessCmdline());
 
     j["process"] = jProcess;
 
