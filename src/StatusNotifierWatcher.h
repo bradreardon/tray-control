@@ -9,6 +9,7 @@
 #include <expected>
 
 #include "Errors.h"
+#include "Types.h"
 
 namespace sdbus
 {
@@ -22,7 +23,7 @@ public:
     ~StatusNotifierWatcher();
 
     std::expected<void, Error> connect();
-    std::expected<std::vector<std::string>, Error> getRegisteredStatusNotifierItemAddresses();
+    std::expected<std::vector<SniAddress>, Error> getRegisteredStatusNotifierItemAddresses();
 
 private:
     std::unique_ptr<sdbus::IProxy> proxy_;

@@ -8,6 +8,7 @@
 #include <expected>
 
 #include "Errors.h"
+#include "Types.h"
 
 namespace sdbus
 {
@@ -27,7 +28,7 @@ public:
         std::string description;
     };
 
-    StatusNotifierItem( std::string_view destination );
+    StatusNotifierItem( SniAddress destination );
     ~StatusNotifierItem();
 
     std::expected<void, Error> connect();
@@ -85,5 +86,5 @@ public:
 
 private:
     std::unique_ptr<sdbus::IProxy> proxy_;
-    std::string_view destination_;
+    SniAddress destination_;
 };

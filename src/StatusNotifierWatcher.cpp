@@ -7,6 +7,7 @@
 
 #include "Utils.h"
 #include "DBusUtils.h"
+#include "Types.h"
 
 
 StatusNotifierWatcher::StatusNotifierWatcher() = default;
@@ -23,17 +24,36 @@ std::expected<void, Error> StatusNotifierWatcher::connect()
     } );
 }
 
-std::expected<std::vector<std::string>, Error> StatusNotifierWatcher::getRegisteredStatusNotifierItemAddresses()
+std::expected<std::vector<SniAddress>, Error> StatusNotifierWatcher::getRegisteredStatusNotifierItemAddresses()
 {
     return
         safelyGetProperty<std::vector<std::string>>( proxy_, "org.kde.StatusNotifierWatcher", "RegisteredStatusNotifierItems" ) >>
-            [] ( std::vector<std::string>&& addrs ) {
+            [] ( std::vector<std::string>&& addrs )
+                -> std::expected<std::vector<SniAddress>, Error>
+            {
+                std::vector<SniAddress> out;
+                out.reserve(addrs.size());
+
                 for ( auto& addr : addrs )
                 {
-                    addr = addr.substr( 0, addr.find( '/' ) );
+                    /*
+                        StatusNotifierItems created by Ayatana are not stored at the normal path of /StatusNotifierItem,
+                        so we'll split the path based on the first occurrence of `/` to separate the service name of the
+                        process exposing a status item and its object path.
+                    */
+                    auto slashIndex = addr.find( '/' );
+                    std::string serviceName = addr.substr( 0, slashIndex );
+
+                    // leading `/` in object path must be retained
+                    std::string objectPath = addr.substr( slashIndex );
+
+                    out.push_back(SniAddress{
+                        std::move( serviceName ),
+                        std::move( objectPath ),
+                    });
                 }
 
-                return addrs;
+                return out;
             };
 }
 

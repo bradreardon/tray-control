@@ -8,6 +8,7 @@
 #include "StatusNotifierWatcher.h"
 #include "StatusNotifierItem.h"
 #include "Utils.h"
+#include "Types.h"
 
 
 #define WRAP_FUNC_TO_LAMBDA( func ) \

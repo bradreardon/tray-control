@@ -8,6 +8,7 @@
 #include "StatusNotifierWatcher.h"
 #include "StatusNotifierItem.h"
 #include "Utils.h"
+#include "Types.h"
 
 
 void exitWithMsg( std::string_view msg, int code = -1 )

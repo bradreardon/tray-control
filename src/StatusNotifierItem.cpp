@@ -6,13 +6,14 @@
 #include <sdbus-c++/sdbus-c++.h>
 
 #include "DBusUtils.h"
+#include "Types.h"
 
 
 template <typename T>
 static constexpr auto safelyGetSNIProperty = std::bind( safelyGetProperty<T>, std::placeholders::_1, "org.kde.StatusNotifierItem", std::placeholders::_2 );
 
 
-StatusNotifierItem::StatusNotifierItem( std::string_view destination ):
+StatusNotifierItem::StatusNotifierItem( SniAddress destination ):
     destination_( destination )
 {}
 
@@ -22,7 +23,7 @@ StatusNotifierItem::~StatusNotifierItem() = default;
 std::expected<void, Error> StatusNotifierItem::connect()
 {
     return safelyExec( [this] -> std::expected<void, Error> {
-        if ( proxy_ = sdbus::createProxy( sdbus::createSessionBusConnection(), sdbus::ServiceName{ std::string( destination_ ) }, sdbus::ObjectPath{ "/StatusNotifierItem" } ) )
+        if ( proxy_ = sdbus::createProxy( sdbus::createSessionBusConnection(), sdbus::ServiceName{ destination_.serviceName }, sdbus::ObjectPath{ destination_.objectPath } ) )
             return {};
         else
             return makeError( ErrorKind::ConnectionError );
