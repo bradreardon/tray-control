@@ -21,6 +21,25 @@ void exitWithMsg( std::string_view msg, int code = -1 )
     exit( code );
 }
 
+void print_json_string (const json& obj, const char* key, const char* label_fmt) {
+    auto it = obj.find(key);
+    if (it == obj.end() || it->is_null()) return;
+
+    // if the value isn't a string, skip (or coerce)
+    if (!it->is_string()) return;
+
+    fmt::printf(label_fmt, it->get_ref<const std::string&>().c_str());
+};
+
+void print_json_u32 (const json& obj, const char* key, const char* label_fmt) {
+    auto it = obj.find(key);
+    if (it == obj.end() || it->is_null()) return;
+
+    if (!it->is_number_unsigned()) return;
+
+    fmt::printf(label_fmt, it->get<uint32_t>());
+};
+
 
 int main( int argc, char** argv )
 {
@@ -82,17 +101,16 @@ int main( int argc, char** argv )
         {
             for ( const json& item : itemData )
             {
-                fmt::printf( "Category: %s\n", item.find("category")->get_ref<const std::string&>() );
-                fmt::printf( "Title: %s\n",    item.find("title")->get_ref<const std::string&>() );
+                print_json_string( item, "category",     "Category: %s\n" );
+                print_json_string( item, "title",        "Title: %s\n" );
 
-                if ( verboseOutput )
+                if (verboseOutput)
                 {
-                    fmt::printf( "Id: %s\n", item.find("id")->get_ref<const std::string&>() );
-                    fmt::printf( "Status: %s\n", item.find("status")->get_ref<const std::string&>() );
-                    fmt::printf( "WindowId: %s\n", item.find("windowId")->get<uint32_t>() );
-                    fmt::printf( "IconName: %s\n", item.find("iconName")->get_ref<const std::string&>() );
+                    print_json_string( item, "id",       "Id: %s\n" );
+                    print_json_string( item, "status",   "Status: %s\n" );
+                    print_json_u32( item, "windowId",    "WindowId: %u\n" );
+                    print_json_string( item, "iconName", "IconName: %s\n" );
                 }
-
                 std::cout << '\n';
             }
         }
